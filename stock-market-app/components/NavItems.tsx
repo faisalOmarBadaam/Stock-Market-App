@@ -1,5 +1,5 @@
 "use client";
-import { Nav_Items } from "@/lib/constants";
+import { NAV_ITEMS } from "@/lib/constants";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -12,15 +12,15 @@ const NavItems = () => {
   return (
     <>
       <ul className="flex flex-col sm:flex-row p-2 gap-3 sm:gap-10 font-medium">
-        {Nav_Items.map((item) => (
-          <li key={item.title}>
+        {NAV_ITEMS.map((item) => (
+          <li key={item.label}>
             <Link
               className={`hover:text-yellow-500 transition-colors ${
                 isActive(item.href) ? "text-gray-100" : ""
               }`}
               href={item.href}
             >
-              {item.title}
+              {item.label}
             </Link>
           </li>
         ))}
