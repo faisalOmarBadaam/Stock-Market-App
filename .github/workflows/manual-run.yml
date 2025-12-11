@@ -1,0 +1,67 @@
+name: Manual Workflow With Inputs & Outputs
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "write your name"
+        required: true
+        type: string
+      environment:
+        description: "choose the deployment environment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      enable-feature-x:
+        description: "enable feature X?"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build-message:
+    name: Build Greeting Message
+    runs-on: ubuntu-latest
+
+    outputs:
+      greeting: ${{ steps.build-output.outputs.greeting }}
+      env-name: ${{ steps.build-output.outputs.env-name }}
+
+    steps:
+      - name: Generate Greeting Message
+        id: build-output
+        run: |
+          NAME="${{ github.event.inputs.name }}"
+          ENV="${{ github.event.inputs.environment }}"
+          FEATURE_X="${{ github.event.inputs.enable-feature-x }}"
+
+          GREETING="Hello ${NAME}! You are deploying to ${ENV}."
+
+          if [ "${FEATURE_X}" = "true" ]; then
+            GREETING="${GREETING} Feature X is ENABLED."
+          else
+            GREETING="${GREETING} Feature X is DISABLED."
+          fi
+
+          echo "greeting=${GREETING}" >> $GITHUB_OUTPUT
+          echo "env-name=${ENV}" >> $GITHUB_OUTPUT
+
+      - name: Display Generated Outputs
+        run: |
+          echo "Greeting: ${{ steps.build-output.outputs.greeting }}"
+          echo "Environment: ${{ steps.build-output.outputs.env-name }}"
+
+  use-outputs:
+    name: Use Outputs From Previous Job
+    runs-on: ubuntu-latest
+    needs: build-message
+
+    steps:
+      - name: Display Outputs from build-message Job
+        run: |
+          echo "Greeting from previous job: ${{ needs.build-message.outputs.greeting }}"
+          echo "Env from previous job: ${{ needs.build-message.outputs.env-name }}"
